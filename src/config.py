@@ -20,7 +20,7 @@ class Config:
 
     # ──── Ollama ────
     OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
-    MODEL_NAME = os.getenv('MODEL_NAME', 'gemma3:latest')
+    MODEL_NAME = os.getenv('MODEL_NAME', 'mistral:7b')
     EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'nomic-embed-text')
 
     # ──── Paths ────
