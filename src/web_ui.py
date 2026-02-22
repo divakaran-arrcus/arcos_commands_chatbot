@@ -4,8 +4,8 @@ This module provides a ChatGPT-style web interface using Chainlit.
 """
 import chainlit as cl
 from chainlit import user_session
-from rag_engine import RAGEngine
-from config import Config
+from src.rag_engine import RAGEngine
+from src.config import Config
 
 
 # Initialize shared RAG engine (same as Slack bot uses)

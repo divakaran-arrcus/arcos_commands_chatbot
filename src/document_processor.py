@@ -45,7 +45,7 @@ class AdocParser:
 
     def parse_file(self, file_path: str) -> list[DocumentChunk]:
         """Parse an .adoc file into chunks with metadata."""
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
             content = f.read()
 
         # Get filename for source tracking

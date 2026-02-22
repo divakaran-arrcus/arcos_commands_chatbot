@@ -63,6 +63,21 @@ class Config:
         if not cls.ADOC_FILES_PATH:
             raise ValueError("ADOC_FILES_PATH cannot be empty")
 
+        # Validate paths don't contain traversal sequences
+        # Use realpath to resolve any .. or symlinks and check the resolved path
+        try:
+            real_chromadb = os.path.realpath(cls.CHROMADB_PATH)
+            real_adoc = os.path.realpath(cls.ADOC_FILES_PATH)
+        except OSError as e:
+            raise ValueError(f"Invalid path: {e}")
+        
+        if os.path.isabs(real_chromadb):
+            raise ValueError("CHROMADB_PATH must be a relative path")
+        if os.path.isabs(real_adoc):
+            raise ValueError("ADOC_FILES_PATH must be a relative path")
+        if '..' in real_chromadb or '..' in real_adoc:
+            raise ValueError("Paths cannot contain '..' traversal sequences")
+
         # Ollama validation
         if not cls.MODEL_NAME:
             raise ValueError("MODEL_NAME cannot be empty")

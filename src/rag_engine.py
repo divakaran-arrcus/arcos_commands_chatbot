@@ -6,7 +6,6 @@ answer generation using Ollama.
 import logging
 import re
 from typing import Optional
-from concurrent.futures import ThreadPoolExecutor
 
 import chromadb
 import ollama
@@ -72,9 +71,6 @@ class RAGEngine:
         # Initialize Ollama client
         self._ollama_client = None
 
-        # Worker pool for concurrent queries
-        self.executor = ThreadPoolExecutor(max_workers=Config.WORKER_THREADS)
-
     @property
     def ollama_client(self):
         """Lazy initialization of Ollama client."""
@@ -122,12 +118,16 @@ class RAGEngine:
         Returns:
             List of retrieved chunks with metadata.
         """
-        # Generate query embedding
-        response = self.ollama_client.embeddings(
-            model=self.embedding_model,
-            prompt=query
-        )
-        query_embedding = response['embedding']
+        try:
+            # Generate query embedding
+            response = self.ollama_client.embeddings(
+                model=self.embedding_model,
+                prompt=query
+            )
+            query_embedding = response['embedding']
+        except Exception as e:
+            logger.error(f"Failed to generate embedding for query '{query}': {e}")
+            return []
 
         # Build filter if protocol specified
         where_filter = None
