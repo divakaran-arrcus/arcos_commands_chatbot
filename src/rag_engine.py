@@ -147,7 +147,12 @@ class RAGEngine:
         if results['documents'] and results['documents'][0]:
             for i, doc in enumerate(results['documents'][0]):
                 distance = results['distances'][0][i]
-                similarity = 1 - distance  # Convert distance to similarity
+                # ChromaDB with cosine distance: distance is 1 - cosine_similarity
+                # So similarity = 1 - distance for cosine space
+                similarity = 1 - distance
+
+                # Log for debugging
+                logger.debug(f"Result {i}: distance={distance:.4f}, similarity={similarity:.4f}, threshold={score_threshold}")
 
                 if similarity >= score_threshold:
                     chunks.append({
@@ -161,7 +166,7 @@ class RAGEngine:
                         'similarity': similarity
                     })
 
-        logger.info(f"Search for '{query}' returned {len(chunks)} relevant chunks")
+        logger.info(f"Search for '{query}' returned {len(chunks)} relevant chunks (total results: {len(results['documents'][0]) if results['documents'] else 0})")
         return chunks
 
     def build_prompt(self, question: str, chunks: list[dict],

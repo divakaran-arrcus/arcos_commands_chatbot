@@ -36,7 +36,28 @@ test-index:
 	./venv/bin/python -m src.document_processor
 
 test-rag:
-	./venv/bin/python -m src.rag_engine "show bgp summary"
+	./venv/bin/python -c "
+import sys
+sys.path.insert(0, '.')
+from src.rag_engine import RAGEngine
+from src.config import Config
+
+print('Testing RAG engine...')
+print(f'ChromaDB path: {Config.CHROMADB_PATH}')
+print(f'Model: {Config.MODEL_NAME}')
+print(f'Embedding model: {Config.EMBEDDING_MODEL}')
+
+engine = RAGEngine()
+print(f'Collection count: {engine.collection.count()}')
+
+# Test search
+query = 'show bgp summary'
+print(f'\nSearching for: {query}')
+chunks = engine.search(query, top_k=5, score_threshold=0.0)  # No threshold to see all results
+print(f'Found {len(chunks)} chunks')
+for i, chunk in enumerate(chunks[:3]):
+    print(f'  {i+1}. {chunk[\"source_file\"]} - {chunk[\"command_name\"]} (similarity: {chunk[\"similarity\"]:.4f})')
+"
 
 web:
 	./venv/bin/chainlit run src/web_ui.py -w --port 8000
