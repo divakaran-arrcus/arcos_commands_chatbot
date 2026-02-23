@@ -16,8 +16,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      # Read-only access to data (index is built outside container)
-      - ./data/chromadb:/app/data/chromadb:ro
+      # ChromaDB needs write access for lock files
+      - ./data/chromadb:/app/data/chromadb
       - ./data/adoc_files:/app/data/adoc_files:ro
     restart: unless-stopped
     logging:
@@ -51,8 +51,8 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      # Read-only access to data
-      - ./data/chromadb:/app/data/chromadb:ro
+      # ChromaDB needs write access for lock files
+      - ./data/chromadb:/app/data/chromadb
       - ./data/adoc_files:/app/data/adoc_files:ro
       # Chainlit config for UI customization
       - ./.chainlit:/app/.chainlit
