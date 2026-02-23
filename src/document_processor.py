@@ -288,11 +288,12 @@ class DocumentProcessor:
         )
         return response['embedding']
 
-    def store_chunks(self, chunks: list[DocumentChunk]) -> None:
+    def store_chunks(self, chunks: list[DocumentChunk], verbose: bool = False) -> None:
         """Store chunks with embeddings in ChromaDB.
 
         Args:
             chunks: List of DocumentChunk objects to store.
+            verbose: Show progress output.
         """
         if not chunks:
             return
@@ -303,7 +304,10 @@ class DocumentProcessor:
         metadatas = []
         ids = []
 
+        total = len(chunks)
         for i, chunk in enumerate(chunks):
+            if verbose and i % 10 == 0:
+                print(f"  📊 Generating embeddings: {i}/{total} chunks...")
             embedding = self.generate_embedding(chunk.content)
             embeddings.append(embedding)
             texts.append(chunk.content)
@@ -318,19 +322,22 @@ class DocumentProcessor:
             ids.append(f"{chunk.source_file}_{i}")
 
         # Store in ChromaDB
+        print(f"  📊 Storing {len(chunks)} chunks in ChromaDB...")
         self.collection.add(
             embeddings=embeddings,
             documents=texts,
             metadatas=metadatas,
             ids=ids
         )
+        print(f"  ✅ Stored {len(chunks)} chunks")
 
-    def rebuild_index(self, adoc_directory: str, dry_run: bool = False) -> dict:
+    def rebuild_index(self, adoc_directory: str, dry_run: bool = False, verbose: bool = False) -> dict:
         """Full index rebuild: parse all files, chunk, embed, store.
 
         Args:
             adoc_directory: Path to directory containing .adoc files.
             dry_run: If True, parse and chunk but don't store.
+            verbose: Show progress output.
 
         Returns:
             Statistics dictionary.
@@ -360,8 +367,9 @@ class DocumentProcessor:
             'avg_chunk_size': 0
         }
 
+        print(f"📄 Processing {len(adoc_files)} files...")
         for file_path in adoc_files:
-            logger.info(f"Processing: {file_path}")
+            print(f"  📝 {Path(file_path).name}")
             chunks = self.process_file(file_path)
             all_chunks.extend(chunks)
             stats['files_processed'] += 1
@@ -369,8 +377,8 @@ class DocumentProcessor:
 
         # Store chunks (unless dry run)
         if not dry_run:
-            logger.info(f"Storing {len(all_chunks)} chunks in ChromaDB...")
-            self.store_chunks(all_chunks)
+            print(f"\n💾 Storing {len(all_chunks)} chunks in ChromaDB...")
+            self.store_chunks(all_chunks, verbose=True)
         else:
             logger.info(f"Dry run: would store {len(all_chunks)} chunks")
 

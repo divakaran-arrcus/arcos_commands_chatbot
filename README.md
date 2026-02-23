@@ -72,12 +72,17 @@ ollama pull nomic-embed-text     # Embedding model for semantic search
 Place your `.adoc` CLI reference files in `data/adoc_files/`, then:
 
 ```bash
-# Rebuild the vector index
+# Rebuild the vector index (local Python)
 make rebuild-index
 
+# OR use Docker if local Python is incompatible (e.g., Python 3.14+)
+make rebuild-index-docker
+
 # Or preview chunks without storing
-make rebuild-index DRY_RUN=1
+make rebuild-index-dryrun
 ```
+
+> **Note:** If you get Pydantic/Python version errors, use `make rebuild-index-docker` which runs inside a Docker container with compatible Python 3.11.
 
 ### 4. Run the Application
 
@@ -191,7 +196,8 @@ Docker Operations:
   make logs-web       Tail web UI logs
 
 Maintenance:
-  make rebuild-index  Rebuild ChromaDB index
+  make rebuild-index        Rebuild ChromaDB index (local Python)
+  make rebuild-index-docker Rebuild ChromaDB index (Docker)
   make backup         Backup ChromaDB index
   make clean          Clean up generated files
   make ollama-status  Check Ollama status

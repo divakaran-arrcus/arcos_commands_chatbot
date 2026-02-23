@@ -9,7 +9,14 @@ Usage:
 """
 import sys
 import argparse
+import logging
 from pathlib import Path
+
+# Configure logging to show progress
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
 # Add project root to Python path
 project_root = Path(__file__).parent.parent
@@ -35,6 +42,11 @@ def main():
         default=None,
         help="Override ADOC_FILES_PATH from config"
     )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Show detailed progress"
+    )
     args = parser.parse_args()
 
     # Determine paths
@@ -44,6 +56,7 @@ def main():
     print(f"📁 ADOC files path: {adoc_path}")
     print(f"💾 ChromaDB path: {chromadb_path}")
     print(f"🤖 Embedding model: {Config.EMBEDDING_MODEL}")
+    print(f"🌐 Ollama host: {Config.OLLAMA_HOST}")
     print()
 
     # Check if adoc path exists
@@ -51,6 +64,17 @@ def main():
         print(f"❌ Error: ADOC files path does not exist: {adoc_path}")
         print("   Please create the directory and add .adoc files, or set ADOC_FILES_PATH in .env")
         sys.exit(1)
+
+    # Test Ollama connection
+    print("🔌 Testing Ollama connection...")
+    try:
+        import ollama
+        ollama.list()
+        print("✅ Ollama connection successful")
+    except Exception as e:
+        print(f"❌ Cannot connect to Ollama at {Config.OLLAMA_HOST}: {e}")
+        sys.exit(1)
+    print()
 
     # Initialize processor
     processor = DocumentProcessor(
@@ -88,8 +112,8 @@ def main():
         print("🔄 Rebuilding index...")
         print("=" * 60)
         
-        # Rebuild the index
-        stats = processor.rebuild_index(adoc_path)
+        # Rebuild the index with progress
+        stats = processor.rebuild_index(adoc_path, verbose=True)
         
         print()
         print("=" * 60)

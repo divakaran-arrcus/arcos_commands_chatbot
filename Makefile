@@ -22,7 +22,8 @@ help:
 	@echo "    make logs-web     - Tail web UI logs"
 	@echo ""
 	@echo "  Maintenance:"
-	@echo "    make rebuild-index- Rebuild ChromaDB index"
+	@echo "    make rebuild-index      - Rebuild ChromaDB index (local Python)"
+	@echo "    make rebuild-index-docker - Rebuild ChromaDB index (Docker)"
 	@echo "    make backup       - Backup ChromaDB index"
 	@echo "    make clean        - Clean up generated files"
 	@echo "    make ollama-status- Check Ollama status"
@@ -78,6 +79,20 @@ logs-web:
 rebuild-index:
 	@echo "⏳ Rebuilding index from data/adoc_files/..."
 	./venv/bin/python scripts/rebuild_index.py
+	@echo "✅ Index rebuilt"
+
+rebuild-index-docker:
+	@echo "⏳ Rebuilding index inside Docker container..."
+	docker build -t arcos-rebuild -f Dockerfile .
+	docker run --rm \
+		--network host \
+		-e OLLAMA_HOST=http://localhost:11434 \
+		-e CHROMADB_PATH=/app/data/chromadb \
+		-e ADOC_FILES_PATH=/app/data/adoc_files \
+		-v $(PWD)/data/chromadb:/app/data/chromadb \
+		-v $(PWD)/data/adoc_files:/app/data/adoc_files:ro \
+		arcos-rebuild \
+		python scripts/rebuild_index.py
 	@echo "✅ Index rebuilt"
 
 rebuild-index-dryrun:
